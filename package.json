@@ -1,0 +1,49 @@
+{
+  "name": "mcp-forge",
+  "version": "0.1.0",
+  "description": "Turn any REST API into an MCP server in 10 seconds. Runtime OpenAPI wrapper - zero codegen.",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "mcp-forge": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/index.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "openapi",
+    "swagger",
+    "ai",
+    "llm",
+    "claude",
+    "api"
+  ],
+  "author": "Macdara O Murchu",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/m4cd4r4/mcp-forge"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@apidevtools/swagger-parser": "^10.1.1",
+    "@modelcontextprotocol/sdk": "^1.12.1",
+    "commander": "^13.1.0",
+    "undici": "^7.5.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
+  }
+}

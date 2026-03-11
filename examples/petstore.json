@@ -1,0 +1,106 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Petstore",
+    "version": "1.0.0",
+    "description": "A sample Petstore API for testing MCP Forge"
+  },
+  "servers": [
+    { "url": "https://petstore3.swagger.io/api/v3" }
+  ],
+  "paths": {
+    "/pet/{petId}": {
+      "get": {
+        "operationId": "getPetById",
+        "summary": "Find pet by ID",
+        "parameters": [
+          {
+            "name": "petId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": { "type": "integer" },
+                    "name": { "type": "string" },
+                    "status": { "type": "string", "enum": ["available", "pending", "sold"] }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/pet/findByStatus": {
+      "get": {
+        "operationId": "findPetsByStatus",
+        "summary": "Find pets by status",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["available", "pending", "sold"],
+              "default": "available"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": { "type": "integer" },
+                      "name": { "type": "string" },
+                      "status": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/pet": {
+      "post": {
+        "operationId": "addPet",
+        "summary": "Add a new pet to the store",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name"],
+                "properties": {
+                  "name": { "type": "string", "description": "Pet name" },
+                  "status": { "type": "string", "enum": ["available", "pending", "sold"] }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Successful operation" }
+        }
+      }
+    }
+  }
+}
