@@ -36,7 +36,7 @@
   },
   "dependencies": {
     "@apidevtools/swagger-parser": "^10.1.1",
-    "@modelcontextprotocol/sdk": "^1.12.1",
+    "@modelcontextprotocol/sdk": "^1.27.1",
     "commander": "^13.1.0",
     "undici": "^7.5.0"
   },

@@ -1,5 +1,9 @@
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import {
+  CallToolRequestSchema,
+  ListToolsRequestSchema,
+} from '@modelcontextprotocol/sdk/types.js';
 import { parseSpec, type ParsedEndpoint } from './parser/openapi.js';
 import { buildRequest } from './proxy/request-builder.js';
 import { flattenResponse } from './proxy/response.js';
@@ -23,14 +27,35 @@ export async function startServer(config: ForgeConfig): Promise<void> {
     throw new Error('No endpoints matched after filtering. Check your --include/--exclude patterns.');
   }
 
-  const server = new McpServer({
-    name: `mcp-forge: ${info.title}`,
-    version: info.version,
-  });
+  const server = new Server(
+    { name: `mcp-forge: ${info.title}`, version: info.version },
+    { capabilities: { tools: {} } }
+  );
 
+  const toolMap = new Map<string, ParsedEndpoint>();
   for (const endpoint of filtered) {
-    registerTool(server, endpoint, baseUrl, config);
+    toolMap.set(endpoint.toolName, endpoint);
   }
+
+  server.setRequestHandler(ListToolsRequestSchema, async () => ({
+    tools: filtered.map(ep => ({
+      name: ep.toolName,
+      description: ep.description,
+      inputSchema: ep.inputSchema,
+    })),
+  }));
+
+  server.setRequestHandler(CallToolRequestSchema, async (request) => {
+    const { name, arguments: args } = request.params;
+    const endpoint = toolMap.get(name);
+    if (!endpoint) {
+      return {
+        content: [{ type: 'text' as const, text: `Unknown tool: ${name}` }],
+        isError: true,
+      };
+    }
+    return callEndpoint(endpoint, args ?? {}, baseUrl, config);
+  });
 
   log(config, `Registered ${filtered.length} tools from "${info.title}" v${info.version}`);
   log(config, `Base URL: ${baseUrl}`);
@@ -44,63 +69,61 @@ export async function startServer(config: ForgeConfig): Promise<void> {
   }
 }
 
-function registerTool(
-  server: McpServer,
+async function callEndpoint(
   endpoint: ParsedEndpoint,
+  args: Record<string, unknown>,
   baseUrl: string,
   config: ForgeConfig
-): void {
-  server.tool(
-    endpoint.toolName,
-    endpoint.description,
-    endpoint.inputSchema as Record<string, unknown>,
-    async (args: Record<string, unknown>) => {
-      const req = buildRequest(endpoint, args, baseUrl, config.auth);
+) {
+  const req = buildRequest(endpoint, args, baseUrl, config.auth);
 
-      log(config, `${req.method} ${req.url}`);
+  log(config, `${req.method} ${req.url}`);
 
+  try {
+    const response = await httpRequest(req.url, {
+      method: req.method as 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH',
+      headers: req.headers,
+      body: req.body,
+    });
+
+    const contentType = response.headers['content-type'] ?? '';
+    const rawText = await response.body.text();
+    let responseData: unknown;
+
+    if (contentType.includes('application/json')) {
       try {
-        const response = await httpRequest(req.url, {
-          method: req.method as 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH',
-          headers: req.headers,
-          body: req.body,
-        });
-
-        const contentType = response.headers['content-type'] ?? '';
-        let responseData: unknown;
-
-        if (contentType.includes('application/json')) {
-          responseData = await response.body.json();
-        } else {
-          responseData = await response.body.text();
-        }
-
-        if (response.statusCode >= 400) {
-          return {
-            content: [{
-              type: 'text' as const,
-              text: `HTTP ${response.statusCode}: ${flattenResponse(responseData)}`,
-            }],
-            isError: true,
-          };
-        }
-
-        const text = config.flatten
-          ? flattenResponse(responseData)
-          : JSON.stringify(responseData, null, 2);
-
-        return {
-          content: [{ type: 'text' as const, text }],
-        };
-      } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
-        return {
-          content: [{ type: 'text' as const, text: `Request failed: ${message}` }],
-          isError: true,
-        };
+        responseData = JSON.parse(rawText);
+      } catch {
+        responseData = rawText;
       }
+    } else {
+      responseData = rawText;
     }
-  );
+
+    if (response.statusCode >= 400) {
+      return {
+        content: [{
+          type: 'text' as const,
+          text: `HTTP ${response.statusCode}: ${flattenResponse(responseData)}`,
+        }],
+        isError: true,
+      };
+    }
+
+    const text = config.flatten
+      ? flattenResponse(responseData)
+      : JSON.stringify(responseData, null, 2);
+
+    return {
+      content: [{ type: 'text' as const, text }],
+    };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    return {
+      content: [{ type: 'text' as const, text: `Request failed: ${message}` }],
+      isError: true,
+    };
+  }
 }
 
 function filterEndpoints(
