@@ -1,38 +1,38 @@
-# MCP Forge
+# mcpwrap
 
 **Live:** https://mcp-forge-black.vercel.app
 
-![MCP Forge landing page](docs/screenshot.png)
+![mcpwrap landing page](docs/screenshot.png)
 
 Turn any REST API into an MCP server in 10 seconds.
 
 ```bash
-npx mcp-forge --spec https://petstore3.swagger.io/api/v3/openapi.json
+npx mcpwrap --spec https://petstore3.swagger.io/api/v3/openapi.json
 ```
 
 No code generation. No config files. Just point and serve.
 
 ## Why?
 
-Other tools generate static code from your OpenAPI spec. MCP Forge wraps your API **at runtime** - it reads the spec, creates MCP tools dynamically, and proxies requests to your API. Update the spec, restart, done.
+Other tools generate static code from your OpenAPI spec. mcpwrap wraps your API **at runtime** - it reads the spec, creates MCP tools dynamically, and proxies requests to your API. Update the spec, restart, done.
 
 ## Quick Start
 
 ```bash
 # From a URL
-npx mcp-forge --spec https://api.example.com/openapi.json
+npx mcpwrap --spec https://api.example.com/openapi.json
 
 # From a local file
-npx mcp-forge --spec ./my-api.yaml
+npx mcpwrap --spec ./my-api.yaml
 
 # With authentication
-npx mcp-forge --spec ./api.json --auth "Bearer $MY_TOKEN"
+npx mcpwrap --spec ./api.json --auth "Bearer $MY_TOKEN"
 
 # With API key header
-npx mcp-forge --spec ./api.json --auth "X-API-Key:your-key-here"
+npx mcpwrap --spec ./api.json --auth "X-API-Key:your-key-here"
 
 # Filter endpoints
-npx mcp-forge --spec ./api.json --include "/pets/*" --exclude "/admin/*"
+npx mcpwrap --spec ./api.json --include "/pets/*" --exclude "/admin/*"
 ```
 
 ## Claude Desktop Integration
@@ -44,7 +44,7 @@ Add to your Claude Desktop config (`claude_desktop_config.json`):
   "mcpServers": {
     "my-api": {
       "command": "npx",
-      "args": ["mcp-forge", "--spec", "https://api.example.com/openapi.json"]
+      "args": ["mcpwrap", "--spec", "https://api.example.com/openapi.json"]
     }
   }
 }
@@ -91,8 +91,8 @@ Tools are named using the `operationId` from your spec when available, falling b
 ## Development
 
 ```bash
-git clone https://github.com/m4cd4r4/mcp-forge
-cd mcp-forge
+git clone https://github.com/m4cd4r4/mcpwrap
+cd mcpwrap
 npm install
 npm test
 npm run dev -- --spec examples/petstore.json --verbose
