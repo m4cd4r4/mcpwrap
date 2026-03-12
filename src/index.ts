@@ -7,7 +7,7 @@ import { parseAuth, resolveEnvVars, type ForgeConfig } from './config.js';
 const program = new Command();
 
 program
-  .name('mcp-forge')
+  .name('mcpwrap')
   .description('Turn any REST API into an MCP server. Zero codegen.')
   .version('0.1.0')
   .requiredOption('--spec <path>', 'Path or URL to OpenAPI 3.x spec (JSON or YAML)')
@@ -36,7 +36,7 @@ program
       await startServer(config);
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      console.error(`[mcp-forge] Error: ${message}`);
+      console.error(`[mcpwrap] Error: ${message}`);
       process.exit(1);
     }
   });
