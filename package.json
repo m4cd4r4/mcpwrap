@@ -1,11 +1,11 @@
 {
-  "name": "mcp-forge",
+  "name": "mcpwrap",
   "version": "0.1.0",
   "description": "Turn any REST API into an MCP server in 10 seconds. Runtime OpenAPI wrapper - zero codegen.",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
-    "mcp-forge": "dist/index.js"
+    "mcpwrap": "dist/index.js"
   },
   "scripts": {
     "build": "tsc",
@@ -29,7 +29,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/m4cd4r4/mcp-forge"
+    "url": "https://github.com/m4cd4r4/mcpwrap"
   },
   "engines": {
     "node": ">=18"
